@@ -182,6 +182,18 @@ class ZeitwerkIntegrationTest < ActiveSupport::TestCase
     assert_not Rails.autoloaders.once.reloading_enabled?
   end
 
+  test "root directories manually set by the end user are watched" do
+    app_dir "extras"
+
+    app_file "config/initializers/zeitwerk.rb", <<~'RUBY'
+      Rails.autoloaders.main.push_dir("#{Rails.root}/extras")
+    RUBY
+
+    boot
+
+    assert_equal [:rb], Rails.application.watchable_args[1]["#{Rails.root}/extras"]
+  end
+
   test "eager loading loads code in engines" do
     $test_blog_engine_eager_loaded = false
 

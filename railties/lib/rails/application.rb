@@ -404,14 +404,12 @@ module Rails
       @routes_reloader ||= RoutesReloader.new
     end
 
-    # Returns an array of file paths appended with a hash of
-    # directories-extensions suitable for ActiveSupport::FileUpdateChecker
-    # API.
+    # The return value conforms to the ActiveSupport::FileUpdateChecker API.
     def watchable_args # :nodoc:
       files, dirs = config.watchable_files.dup, config.watchable_dirs.dup
 
-      ActiveSupport::Dependencies.autoload_paths.each do |path|
-        File.file?(path) ? files << path.to_s : dirs[path.to_s] = [:rb]
+      Rails.autoloaders.main.dirs.each do |dir|
+        dirs[dir] = [:rb]
       end
 
       [files, dirs]
