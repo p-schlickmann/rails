@@ -56,6 +56,32 @@ class ZeitwerkIntegrationTest < ActiveSupport::TestCase
     assert RESTfulController
   end
 
+  test "root directories manually set by the user are honored" do
+    app_dir "app/services"
+    app_dir "extras"
+
+    app_file "config/initializers/namespaces.rb", <<~'RUBY'
+      module ZeitwerkIntegrationTestServices; end
+      module ZeitwerkIntegrationTestExtras; end
+
+      # While the autoload path for app/services is added by Rails as a string,
+      # this one is a Pathname. We should detect the two of them.
+      ActiveSupport::Dependencies.autoload_paths << Rails.root.join("extras")
+
+      Rails.autoloaders.main.tap do |main|
+        main.push_dir("#{Rails.root}/app/services", namespace: ZeitwerkIntegrationTestServices)
+        main.push_dir("#{Rails.root}/extras", namespace: ZeitwerkIntegrationTestExtras)
+      end
+    RUBY
+
+    app_file "app/services/x.rb", "ZeitwerkIntegrationTestServices::X = true"
+    app_file "extras/x.rb", "ZeitwerkIntegrationTestExtras::X = true"
+
+    boot
+
+    assert ZeitwerkIntegrationTestServices::X
+    assert ZeitwerkIntegrationTestExtras::X
+  end
 
   test "the once autoloader can autoload from initializers" do
     app_file "extras0/x.rb", "X = 0"
