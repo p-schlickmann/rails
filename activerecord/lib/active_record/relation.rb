@@ -213,7 +213,7 @@ module ActiveRecord
     # and failed due to validation errors it won't be persisted, you get what #create returns in
     # such situation.
     def create_or_find_by(attributes, &block)
-      transaction(requires_new: true) { create(attributes, &block) }
+      create(attributes, &block)
     rescue ActiveRecord::RecordNotUnique
       if connection.transaction_open?
         where(attributes).lock.find_by!(attributes)
@@ -226,7 +226,7 @@ module ActiveRecord
     # {create!}[rdoc-ref:Persistence::ClassMethods#create!] so an exception
     # is raised if the created record is invalid.
     def create_or_find_by!(attributes, &block)
-      transaction(requires_new: true) { create!(attributes, &block) }
+      create!(attributes, &block)
     rescue ActiveRecord::RecordNotUnique
       if connection.transaction_open?
         where(attributes).lock.find_by!(attributes)

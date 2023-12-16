@@ -28,6 +28,9 @@ require "models/categorization"
 require "models/edge"
 require "models/subscriber"
 require "models/cpk"
+require "models/api_key"
+require "models/ruby_gem"
+require "models/version"
 
 class RelationTest < ActiveRecord::TestCase
   fixtures :authors, :author_addresses, :topics, :entrants, :developers, :people, :companies, :developers_projects, :accounts, :categories, :categorizations, :categories_posts, :posts, :comments, :tags, :taggings, :cars, :minivans, :cpk_orders
@@ -1552,6 +1555,19 @@ class RelationTest < ActiveRecord::TestCase
     assert_equal "green", bird.color
 
     assert_equal bird, Bird.create_with(color: "blue").find_or_create_by(name: "bob")
+  end
+
+  def test_regression_in_model_scoping_callback
+    gem1 = RubyGem.create!
+    api_key = ApiKey.create!
+    Version.create!(ruby_gem: gem1, platform: "ruby", indexed: true)
+    Version.create!(ruby_gem: gem1, api_key: api_key, platform: "ruby", indexed: true)
+
+    api_key.versions.create_with(indexed: true).find_or_create_by!(
+      ruby_gem: gem1, number: "0.1.0", platform: "ruby"
+    )
+
+    assert_equal 3, gem1.reload.versions.count
   end
 
   def test_find_or_create_by_with_block

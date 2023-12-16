@@ -63,6 +63,9 @@ ActiveRecord::Schema.define do
     t.timestamp :manufactured_at, default: -> { "CURRENT_TIMESTAMP" }
   end
 
+  create_table :api_keys, force: true do |t|
+  end
+
   create_table :articles, force: true do |t|
   end
 
@@ -1292,6 +1295,18 @@ ActiveRecord::Schema.define do
 
   create_table :vertices, force: true do |t|
     t.column :label, :string
+  end
+
+  create_table :ruby_gems, force: true do |t|
+  end
+
+  create_table :versions, force: true do |t|
+    t.references :api_key
+    t.references :ruby_gem
+    t.string :number
+    t.string :platform
+    t.boolean :latest, default: false
+    t.boolean :indexed, default: false
   end
 
   create_table "warehouse-things", force: true do |t|
